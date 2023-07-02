@@ -58,7 +58,7 @@ rules:
           - "192.168.1.1:53"
           - "192.168.1.2:53"
 
-    - name: allo TXT for lets encrypt
+    - name: allow TXT for lets encrypt
       match:
         query types:
           - TXT
@@ -111,7 +111,7 @@ rules:
           - "192.168.1.1:53"
           - "192.168.1.2:53"
 
-    - name: allo TXT for lets encrypt
+    - name: allow TXT for lets encrypt
       match:
         query types:
           - TXT
