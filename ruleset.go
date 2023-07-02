@@ -87,7 +87,7 @@ func newRule(rc RuleConfig) (*Rule, error) {
 
 	for i, iprange := range rc.Then.Filter.AnsweredAddress.NotIn {
 		if _, p, err := net.ParseCIDR(iprange); err == nil {
-			rule.Match.AnsweredAddress.NotIn = append(rule.Match.AnsweredAddress.NotIn, *p)
+			rule.Then.Filter.AnsweredAddress.NotIn = append(rule.Then.Filter.AnsweredAddress.NotIn, *p)
 		} else {
 			sugar.Warnf("AnsweredAddress.NotIn range:%v fail to parse range: %s: %s", i, iprange, err)
 			errs = append(errs, err)
@@ -144,7 +144,7 @@ type AnsweredAddress struct {
 }
 
 type Filter struct {
-	AnsweredAddress AnsweredAddressConfig
+	AnsweredAddress AnsweredAddress
 }
 
 type Then struct {

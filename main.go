@@ -118,8 +118,11 @@ func handleRequest(w dns.ResponseWriter, req *dns.Msg) {
 	}
 
 	var fate *Then
-	for _, rule := range domaindef.Ruleset {
+	var matchingrule Rule
+	for rulenum, rule := range domaindef.Ruleset {
 		if fate = rule.MatchQuestion(the_question, sanitized_name, remoteaddr); fate != nil {
+			matchingrule = rule
+			sugar.Debugw("rule match", "domainrulesetname", domainrulesetname, "rulenum", rulenum, "sanitized_name", sanitized_name, "qtype", dnstype2txt[the_question.Qtype])
 			break
 		}
 	}
