@@ -1,0 +1,56 @@
+listen:
+  udp:
+    port: 53
+  tcp:
+    port: 53
+rules:
+  example.org:
+    - name: allow NS and SOA queries
+      match:
+        query types:
+          - NS
+          - SOA
+      then:
+        action: forward
+        targets:
+          - "192.168.1.1:53"
+          - "192.168.1.2:53"
+
+    - name: allo TXT for lets encrypt
+      match:
+        query types:
+          - TXT
+        patterns:
+          - ^_acme-challenge\..+$
+      then:
+        action: forward
+        targets:
+          - "192.168.1.1:53"
+          - "192.168.1.2:53"
+
+    - name: allow any query matching begining with ns
+      description:
+      match:
+        patterns:
+          - ^ns
+      then:
+        action: forward
+        targets:
+          - "192.168.1.1:53"
+          - "192.168.1.2:53"
+
+    - name: allow any query from those IPs
+      description:
+      match:
+        source ips:
+          - 10.0.0.0/8
+          - 198.18.0.0/15
+      then:
+        action: forward
+        targets:
+          - "192.168.1.1:53"
+          - "192.168.1.2:53"
+
+    - name: fallback
+      then:
+        action: refused

@@ -1,0 +1,4 @@
+*.yaml
+!*.dist.yaml
+.vscode
+fixtures
