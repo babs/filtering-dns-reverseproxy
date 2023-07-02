@@ -12,6 +12,8 @@ Available actions:
  - `refused`: deliberately reply with a refused message
  - `failed`: deliberately reply with a fail message
 
+Queries are normlized and canonicalized to lower case and trailing dot. Don't forget the later in patters.
+
 ```yaml
 listen:
   udp:
