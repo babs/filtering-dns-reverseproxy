@@ -23,9 +23,6 @@ type Domain struct {
 	Ruleset []Rule
 }
 
-type Ruleset struct {
-}
-
 /*
 func NewCompiledRuleSet(config *Config) (*CompiledRuleSet, error) {
 	rs := CompiledRuleSet{}
@@ -88,7 +85,7 @@ func newRule(rc RuleConfig) (*Rule, error) {
 		}
 	}
 
-	for i, iprange := range rc.Match.AnsweredAddress.NotIn {
+	for i, iprange := range rc.Then.Filter.AnsweredAddress.NotIn {
 		if _, p, err := net.ParseCIDR(iprange); err == nil {
 			rule.Match.AnsweredAddress.NotIn = append(rule.Match.AnsweredAddress.NotIn, *p)
 		} else {
@@ -146,9 +143,14 @@ type AnsweredAddress struct {
 	NotIn []net.IPNet
 }
 
+type Filter struct {
+	AnsweredAddress AnsweredAddressConfig
+}
+
 type Then struct {
 	Action  string
 	Targets []string
+	Filter  Filter
 }
 
 func (r *Rule) MatchQuestion(question dns.Question, sanitized_name string, remoteAddr net.Addr) *Then {

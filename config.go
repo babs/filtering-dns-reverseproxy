@@ -38,10 +38,9 @@ func (n *Network) UnmarshalText(text []byte) error {
 }
 
 type MatchConfig struct {
-	QueryTypes      []string `yaml:"query types"`
-	Patterns        []string
-	SourceIps       []string              `yaml:"source ips"`
-	AnsweredAddress AnsweredAddressConfig `yaml:"answered address"`
+	QueryTypes []string `yaml:"query types"`
+	Patterns   []string
+	SourceIps  []string `yaml:"source ips"`
 }
 
 type AnsweredAddressConfig struct {
@@ -49,9 +48,14 @@ type AnsweredAddressConfig struct {
 	// In    []string `yaml:"in"`
 }
 
+type FilterConfig struct {
+	AnsweredAddress AnsweredAddressConfig `yaml:"answered address"`
+}
+
 type ThenConfig struct {
 	Action  string
 	Targets []string
+	Filter  FilterConfig
 }
 
 func (c *Config) Load(configfile string) error {
