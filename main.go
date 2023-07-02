@@ -191,6 +191,19 @@ func handleRequest(w dns.ResponseWriter, req *dns.Msg) {
 			return
 		}
 		// filter out goes here!
+		if !matchingrule.CheckResponse(resp) {
+			sugar.Infow(
+				"answer forward converted to refused due to response payload filtering",
+				"query", the_question,
+				"target", target,
+				"from", remoteaddr,
+				"resp", resp,
+			)
+			m := new(dns.Msg)
+			m.SetRcode(req, dns.RcodeRefused)
+			w.WriteMsg(m)
+			return
+		}
 		sugar.Infow(
 			"answer forward",
 			"query", the_question,

@@ -201,6 +201,30 @@ func (r *Rule) MatchQuestion(question dns.Question, canonicalized_name string, r
 	return &r.Then
 }
 
-func (r *Rule) CheckResponse() bool {
+func (r *Rule) CheckResponse(resp *dns.Msg) bool {
+	if len(r.Then.Filter.AnsweredAddress.NotIn) > 0 {
+		for _, rr_holder := range [][]dns.RR{resp.Answer, resp.Extra} {
+			for _, record := range rr_holder {
+				switch record.Header().Rrtype {
+				case dns.TypeA:
+					if typed_record, ok := record.(*dns.A); ok {
+						for _, iprange := range r.Then.Filter.AnsweredAddress.NotIn {
+							if iprange.Contains(typed_record.A) {
+								return false
+							}
+						}
+					}
+				case dns.TypeAAAA:
+					if typed_record, ok := record.(*dns.AAAA); ok {
+						for _, iprange := range r.Then.Filter.AnsweredAddress.NotIn {
+							if iprange.Contains(typed_record.AAAA) {
+								return false
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 	return true
 }
