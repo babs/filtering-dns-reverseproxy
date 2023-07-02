@@ -100,7 +100,7 @@ func handleRequest(w dns.ResponseWriter, req *dns.Msg) {
 	matchlen := 0
 	for domain, ruleset := range crs.Domains {
 		if strings.HasSuffix(sanitized_name, domain) {
-			clen := len(sanitized_name)
+			clen := len(domain)
 			if clen > matchlen {
 				matchlen = clen
 				domainrulesetname = domain
