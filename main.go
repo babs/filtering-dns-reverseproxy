@@ -119,7 +119,7 @@ func handleRequest(w dns.ResponseWriter, req *dns.Msg) {
 
 	var fate *Then
 	for _, rule := range domaindef.Ruleset {
-		if fate = rule.MatchQuestion(the_question, remoteaddr); fate != nil {
+		if fate = rule.MatchQuestion(the_question, sanitized_name, remoteaddr); fate != nil {
 			break
 		}
 	}
