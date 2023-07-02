@@ -3,9 +3,23 @@ Filtering DNS Reverse Proxy
 
 A simple Filtering DNS Reverse Proxy allowing to expose publicly part of some zones (ie lets encrypt certs, domain delegation etc) without leaking private informations without falling into split horizon DNS.
 
+Notes
+---
+
+- Be sure to disable recursion and additional on upstream server, for example on bind:
+
+```
+options {
+  // [...]
+  recursion no;
+  additional-from-auth no;
+  additional-from-cache no;
+  // [...]
+};
+```
 
 Config
-===
+---
 
 Available actions:
  - `forward`: forward the query to a target taken randomly in the given `targets` list
