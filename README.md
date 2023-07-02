@@ -42,6 +42,8 @@ rules:
           - NS
           - SOA
           - CAA
+          - MX
+          - SRV
       then:
         action: forward
         targets:
