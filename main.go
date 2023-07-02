@@ -114,7 +114,7 @@ func handleRequest(w dns.ResponseWriter, req *dns.Msg) {
 		dns.HandleFailed(w, req)
 		return
 	} else {
-		sugar.Debugw("selected domain ruleset", "domainrulesetname", domainrulesetname, "sanitized_name", sanitized_name)
+		sugar.Debugw("selected domain ruleset", "domainrulesetname", domainrulesetname, "sanitized_name", sanitized_name, "qtype", dnstype2txt[the_question.Qtype])
 	}
 
 	var fate *Then
