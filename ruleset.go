@@ -153,7 +153,7 @@ type Then struct {
 	Filter  Filter
 }
 
-func (r *Rule) MatchQuestion(question dns.Question, sanitized_name string, remoteAddr net.Addr) *Then {
+func (r *Rule) MatchQuestion(question dns.Question, canonicalized_name string, remoteAddr net.Addr) *Then {
 	var match bool
 	// query types against question.Qtype
 	if len(r.Match.QueryTypes) > 0 {
@@ -188,7 +188,7 @@ func (r *Rule) MatchQuestion(question dns.Question, sanitized_name string, remot
 	if len(r.Match.Patterns) > 0 {
 		match = false
 		for _, pattern := range r.Match.Patterns {
-			if pattern.MatchString(sanitized_name) {
+			if pattern.MatchString(canonicalized_name) {
 				match = true
 				break
 			}

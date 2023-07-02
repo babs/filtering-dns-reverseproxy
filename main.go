@@ -85,21 +85,31 @@ func main() {
 
 func handleRequest(w dns.ResponseWriter, req *dns.Msg) {
 	remoteaddr := w.RemoteAddr()
-	sugar.Debugw("incomming request", "req", req, "remote", remoteaddr)
 	if len(req.Question) != 1 {
-		sugar.Infow("more than one question", "req", req)
+		sugar.Infow(
+			"more than one question in request",
+			"req", req,
+		)
 		dns.HandleFailed(w, req)
 		return
 	}
-
 	the_question := req.Question[0]
-	sanitized_name := dns.Fqdn(strings.ToLower(the_question.Name))
+	canonicalized_name := dns.Fqdn(strings.ToLower(the_question.Name))
+	qtypetxt := dnstype2txt[the_question.Qtype]
+	sugar.Debugw(
+		"incomming request",
+		"qname", the_question.Name,
+		"canonicalized_name", canonicalized_name,
+		"qtype", qtypetxt,
+		"qclass", the_question.Qclass,
+		"remote", remoteaddr,
+	)
 
 	var domainrulesetname string
 	var domaindef Domain
 	matchlen := 0
 	for domain, ruleset := range crs.Domains {
-		if strings.HasSuffix(sanitized_name, domain) {
+		if strings.HasSuffix(canonicalized_name, domain) {
 			clen := len(domain)
 			if clen > matchlen {
 				matchlen = clen
@@ -110,25 +120,41 @@ func handleRequest(w dns.ResponseWriter, req *dns.Msg) {
 	}
 
 	if matchlen == 0 {
-		sugar.Warnw("no domain found to handle query", "domain", sanitized_name)
+		sugar.Warnw("no domain found to handle query", "domain", canonicalized_name)
 		dns.HandleFailed(w, req)
 		return
 	} else {
-		sugar.Debugw("selected domain ruleset", "domainrulesetname", domainrulesetname, "sanitized_name", sanitized_name, "qtype", dnstype2txt[the_question.Qtype])
+		sugar.Debugw(
+			"selected domain ruleset",
+			"domainrulesetname", domainrulesetname,
+			"canonicalized_name", canonicalized_name,
+			"qtype", qtypetxt,
+		)
 	}
 
 	var fate *Then
 	var matchingrule Rule
 	for rulenum, rule := range domaindef.Ruleset {
-		if fate = rule.MatchQuestion(the_question, sanitized_name, remoteaddr); fate != nil {
+		if fate = rule.MatchQuestion(the_question, canonicalized_name, remoteaddr); fate != nil {
 			matchingrule = rule
-			sugar.Debugw("rule match", "domainrulesetname", domainrulesetname, "rulenum", rulenum, "sanitized_name", sanitized_name, "qtype", dnstype2txt[the_question.Qtype])
+			sugar.Debugw(
+				"rule match",
+				"domainrulesetname", domainrulesetname,
+				"rulenum", rulenum,
+				"rulename", rule.Name,
+				"canonicalized_name", canonicalized_name,
+				"qtype", qtypetxt,
+			)
 			break
 		}
 	}
 
 	if fate == nil || fate.Action == ActionRefused {
-		sugar.Infow("answer deliberately refused", "query", the_question, "from", remoteaddr)
+		sugar.Infow(
+			"answer deliberately refused",
+			"query", the_question,
+			"from", remoteaddr,
+		)
 		m := new(dns.Msg)
 		m.SetRcode(req, dns.RcodeRefused)
 		w.WriteMsg(m)
@@ -136,7 +162,11 @@ func handleRequest(w dns.ResponseWriter, req *dns.Msg) {
 	}
 
 	if fate.Action == ActionFailed {
-		sugar.Infow("answer deliberately servfail", "query", the_question, "from", remoteaddr)
+		sugar.Infow(
+			"answer deliberately servfail",
+			"query", the_question,
+			"from", remoteaddr,
+		)
 		m := new(dns.Msg)
 		m.SetRcode(req, dns.RcodeServerFailure)
 		w.WriteMsg(m)
@@ -148,14 +178,26 @@ func handleRequest(w dns.ResponseWriter, req *dns.Msg) {
 		target := fate.Targets[rand.Intn(len(fate.Targets))]
 		resp, _, err := c.Exchange(req, target)
 		if err != nil {
-			sugar.Warnw("error while forwarding request", "err", err, "query", the_question, "target", target, "from", remoteaddr)
+			sugar.Warnw(
+				"error while forwarding request",
+				"err", err,
+				"query", the_question,
+				"target", target,
+				"from", remoteaddr,
+			)
 			m := new(dns.Msg)
 			m.SetRcode(req, dns.RcodeServerFailure)
 			w.WriteMsg(m)
 			return
 		}
 		// filter out goes here!
-		sugar.Infow("answer forward", "query", the_question, "target", target, "from", remoteaddr, "resp", resp)
+		sugar.Infow(
+			"answer forward",
+			"query", the_question,
+			"target", target,
+			"from", remoteaddr,
+			"resp", resp,
+		)
 
 		w.WriteMsg(resp)
 	}
