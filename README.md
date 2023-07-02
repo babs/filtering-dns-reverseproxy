@@ -27,6 +27,7 @@ rules:
         query types:
           - NS
           - SOA
+          - CAA
       then:
         action: forward
         targets:
