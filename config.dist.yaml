@@ -3,6 +3,14 @@ listen:
     port: 53
   tcp:
     port: 53
+
+x-private-ips: &x-private-ips
+- 10.0.0.0/8
+- 100.64.0.0/10
+- 172.16.0.0/12
+- 192.168.0.0/16
+- fdff:ffff:ffff::/48
+
 rules:
   example.org:
     - name: allow NS and SOA queries
@@ -45,9 +53,7 @@ rules:
     - name: allow any query from those IPs
       description:
       match:
-        source ips:
-          - 10.0.0.0/8
-          - 198.18.0.0/15
+        source ips: *x-private-ips
       then:
         action: forward
         targets:
@@ -57,3 +63,66 @@ rules:
     - name: fallback
       then:
         action: refused
+
+
+  subdomain.example.org:
+    - name: allow NS and SOA queries
+      match:
+        query types:
+          - NS
+          - SOA
+          - CAA
+          - MX
+          - SRV
+      then:
+        action: forward
+        targets:
+          - "192.168.1.1:53"
+          - "192.168.1.2:53"
+
+    - name: allo TXT for lets encrypt
+      match:
+        query types:
+          - TXT
+        patterns:
+          - ^_acme-challenge\..+$
+      then:
+        action: forward
+        targets:
+          - "192.168.1.1:53"
+          - "192.168.1.2:53"
+
+    - name: allow internal ips from internal hosts
+      description:
+      match:
+        source ips: *x-private-ips
+      then:
+        action: forward
+        targets:
+          - "192.168.1.1:53"
+          - "192.168.1.2:53"
+
+
+    - name: filter internal ips
+      description:
+      match:
+        query types:
+          - A
+          - AAAA
+          - ANY
+      then:
+        action: forward
+        targets:
+          - "192.168.1.1:53"
+          - "192.168.1.2:53"
+        filter:
+          answered address:
+            not in: *x-private-ips
+
+    # Internal IP being filtered, let's fall back
+    - name: fallback
+      then:
+        action: forward
+        targets:
+          - "192.168.1.1:53"
+          - "192.168.1.2:53"
