@@ -44,12 +44,18 @@ func main() {
 	sugar = logger.Sugar()
 
 	config = new(Config)
-	config.Load(*cli.config_filename)
+	err := config.Load(*cli.config_filename)
+	if err != nil {
+		log.Fatalf("error in base config %v", err)
+	}
 
-	var err error
 	crs, err = config.CompileToRuleset()
 	if err != nil {
 		log.Fatalf("error in base config %v", err)
+	}
+
+	if len(config.Listen) == 0 {
+		log.Fatalf("no listen defined")
 	}
 
 	dns.HandleFunc(".", handleRequest)
