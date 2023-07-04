@@ -140,6 +140,7 @@ func handleRequest(w dns.ResponseWriter, req *dns.Msg) {
 
 	var fate *Then
 	var matchingrule Rule
+	var rulenum int
 	for rulenum, rule := range domaindef.Ruleset {
 		if fate = rule.MatchQuestion(the_question, canonicalized_name, remoteaddr); fate != nil {
 			matchingrule = rule
@@ -158,6 +159,8 @@ func handleRequest(w dns.ResponseWriter, req *dns.Msg) {
 	if fate == nil || fate.Action == ActionRefused {
 		sugar.Infow(
 			"answer deliberately refused",
+			"domainrulesetname", domainrulesetname,
+			"rulenum", rulenum,
 			"query", the_question,
 			"from", remoteaddr,
 		)
@@ -170,6 +173,8 @@ func handleRequest(w dns.ResponseWriter, req *dns.Msg) {
 	if fate.Action == ActionFailed {
 		sugar.Infow(
 			"answer deliberately servfail",
+			"domainrulesetname", domainrulesetname,
+			"rulenum", rulenum,
 			"query", the_question,
 			"from", remoteaddr,
 		)
@@ -186,6 +191,8 @@ func handleRequest(w dns.ResponseWriter, req *dns.Msg) {
 		if err != nil {
 			sugar.Warnw(
 				"error while forwarding request",
+				"domainrulesetname", domainrulesetname,
+				"rulenum", rulenum,
 				"err", err,
 				"query", the_question,
 				"target", target,
@@ -200,6 +207,8 @@ func handleRequest(w dns.ResponseWriter, req *dns.Msg) {
 		if !matchingrule.CheckResponse(resp) {
 			sugar.Infow(
 				"answer forward converted to refused due to response payload filtering",
+				"domainrulesetname", domainrulesetname,
+				"rulenum", rulenum,
 				"query", the_question,
 				"target", target,
 				"from", remoteaddr,
@@ -212,6 +221,8 @@ func handleRequest(w dns.ResponseWriter, req *dns.Msg) {
 		}
 		sugar.Infow(
 			"answer forward",
+			"domainrulesetname", domainrulesetname,
+			"rulenum", rulenum,
 			"query", the_question,
 			"target", target,
 			"from", remoteaddr,

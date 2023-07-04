@@ -172,9 +172,10 @@ func (r *Rule) MatchQuestion(question dns.Question, canonicalized_name string, r
 	// remote addr against remoteAddr
 	if len(r.Match.SourceIps) > 0 {
 		match = false
-		remoteip, _, _ := net.SplitHostPort(remoteAddr.String())
+		parsed_ip, _, _ := net.SplitHostPort(remoteAddr.String())
+		var remoteip = net.ParseIP(parsed_ip)
 		for _, valid_range := range r.Match.SourceIps {
-			if valid_range.Contains(net.IP(remoteip)) {
+			if valid_range.Contains(remoteip) {
 				match = true
 				break
 			}
